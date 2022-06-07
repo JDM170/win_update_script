@@ -1,0 +1,7 @@
+
+- 0 Unrestricted
+- 1 RemoteSigned
+- 2 AllSigned
+- 3 Restricted
+- 4 Bypass
+- 5 Undefined
