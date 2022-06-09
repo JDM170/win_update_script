@@ -69,42 +69,49 @@ dism /cleanup-wim
 # dism /export-image /sourceimagefile:"{wimpath}" /sourceindex:1 /destinationimagefile:"{wimpath}.esd" /Compress:recovery
 
 apps = [
+    "Microsoft.549981C3F5F10", # Cortana (W11)
     "Microsoft.BingWeather",
     "Microsoft.GetHelp",
     "Microsoft.Getstarted",
+    "Microsoft.MSPaint", # Paint 3D (W10)
     "Microsoft.Messaging",
     "Microsoft.Microsoft3DViewer",
-    "Microsoft.MixedReality.Portal",
     "Microsoft.MicrosoftOfficeHub",
     "Microsoft.MicrosoftSolitaireCollection",
     "Microsoft.MicrosoftStickyNotes",
-    "Microsoft.MSPaint",#Paint 3D (Windows 10)
+    "Microsoft.MixedReality.Portal",
     "Microsoft.Office.OneNote",
     "Microsoft.OneConnect",
     "Microsoft.People",
-    "Microsoft.ScreenSketch",#Скриншоты (Windows 10 1809+)
-    "Microsoft.YourPhone",#Ваш телефон (Windows 10 1809+)
     "Microsoft.Print3D",
+    "Microsoft.ScreenSketch", # Скриншоты (W10 1809+)
     "Microsoft.SkypeApp",
+    "Microsoft.Xbox.TCUI", # Xbox Live (W11)
+    "Microsoft.XboxApp", # Xbox (W10)
+    "Microsoft.XboxGameOverlay", # (W11)
+    "Microsoft.XboxGamingOverlay", # Xbox Game Bar (W11)
+    "Microsoft.XboxIdentityProvider", # (W11)
+    "Microsoft.XboxSpeechToTextOverlay", # (W11)
+    "Microsoft.YourPhone", # Ваш телефон (W10 1809+)
     "Microsoft.ZuneMusic",
-    "Microsoft.ZuneVideo",#Кино и ТВ
-    "Microsoft.XboxApp"#Xbox (Windows 10)
-    # "Microsoft.Windows.Cortana" # ?????
-]
-
-w11_apps = [
+    "Microsoft.ZuneVideo", # Кино и ТВ
+    # Все что было обнаружено в W10 из списка W11
     "Microsoft.WindowsAlarms",
     "Microsoft.WindowsCamera",
-    "microsoft.windowscommunicationsapps",
     "Microsoft.WindowsFeedbackHub",
     "Microsoft.WindowsMaps",
     "Microsoft.WindowsSoundRecorder",
-    "Microsoft.GamingApp",#Xbox (Windows 11)
-    "Microsoft.PowerAutomateDesktop",#(Windows11)
-    "Microsoft.Todos",#(Windows11)
-    "Microsoft.BingNews",#Новости (Windows 11)
-    "MicrosoftWindows.Client.WebExperience",#Виджеты (Windows 11)
-    "Microsoft.Paint"#Paint (Windows11)
+    "microsoft.windowscommunicationsapps",
+]
+
+w11_apps = [
+    "Microsoft.BingNews", # Новости (W11)
+    "Microsoft.GamingApp", # Xbox (W11)
+    # "Microsoft.Paint", # Paint (W11)
+    "Microsoft.PowerAutomateDesktop", # (W11)
+    "Microsoft.Todos", # (W11)
+    "MicrosoftTeams", # Teams (W11)
+    "MicrosoftWindows.Client.WebExperience", # Виджеты (W11)
 ]
 
 
@@ -183,7 +190,7 @@ def main():
     print("Затраченное время:", ((time()-time_start) / 60))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         if not is_admin():
             print("Запустите программу от имени администратора!")
