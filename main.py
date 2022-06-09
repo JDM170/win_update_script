@@ -1,7 +1,8 @@
 from sys import exit
-from os import getcwd, remove
+from os import getcwd, remove, system
 from os.path import isfile, exists
-import ctypes
+from time import time
+from ctypes import windll
 import subprocess
 
 
@@ -23,9 +24,9 @@ properties = {
     }
 }
 
-ps1_script_path = getcwd() + "\\ps1_script.tmp.ps1"
-# ps1_script_raw = r"""Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope Process
-ps1_script_raw = r"""{appslist}
+ps_script_path = getcwd() + "\\ps1_script.tmp.ps1"
+# ps_script_raw = r"""Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope Process
+ps_script_raw = r"""{appslist}
 
 Remove-WindowsImage -ImagePath {wimpath} -Index 3
 Remove-WindowsImage -ImagePath {wimpath} -Index 2
@@ -47,6 +48,15 @@ Get-AppxProvisionedPackage -Path {mntpath} | ForEach-Object {{
 Add-WindowsPackage -Path {mntpath} -PackagePath {updpath}
 """
 
+ps_script_additional = r"""
+Dismount-WindowsImage -Path {mntpath} -Save
+Clear-WindowsCorruptMountPoint
+
+Mount-WindowsImage -ImagePath {wimpath} -Index 1 -Path {mntpath}
+
+Add-WindowsPackage -Path {mntpath} -PackagePath {sec_updpath}
+"""
+
 bat_script_path = getcwd() + "\\bat_script.tmp.bat"
 bat_script_raw = r"""@echo off
 
@@ -54,10 +64,9 @@ dism /cleanup-image /image:"{mntpath}" /startcomponentcleanup /resetbase /scratc
 
 dism /unmount-wim /mountdir:"{mntpath}" /commit
 
-dism /export-image /sourceimagefile:"{wimpath}" /sourceindex:1 /destinationimagefile:"{wimpath}.esd" /Compress:recovery
-
 dism /cleanup-wim
 """
+# dism /export-image /sourceimagefile:"{wimpath}" /sourceindex:1 /destinationimagefile:"{wimpath}.esd" /Compress:recovery
 
 apps = [
     "Microsoft.BingWeather",
@@ -100,7 +109,7 @@ w11_apps = [
 
 
 def is_admin():
-    return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    return windll.shell32.IsUserAnAdmin() != 0
 
 
 def ask_input(message, checking_func):
@@ -111,9 +120,17 @@ def ask_input(message, checking_func):
         return user_input
 
 
+def convert_applist_to_string(is_w11):
+    global apps, w11_apps
+    result = "$apps = @(\n"
+    for app in apps if not is_w11 else apps + w11_apps:
+        result += "\t'{}',\n".format(app)
+    return result[:-2] + "\n)"
+
+
 def do_cleanup():
-    if isfile(ps1_script_path):
-        remove(ps1_script_path)
+    if isfile(ps_script_path):
+        remove(ps_script_path)
     if isfile(bat_script_path):
         remove(bat_script_path)
     mntpath = properties.get("mnt").get("path")
@@ -122,43 +139,48 @@ def do_cleanup():
         subprocess.Popen("dism /cleanup-wim").wait()
 
 
-def convert_applist_to_string():
-    global apps
-    result = "$apps = @(\n"
-    for app in apps:
-        result += "\t'{}',\n".format(app)
-    return result[:-2] + "\n)"
-
-
 def main():
-    global apps
+    # Input values
     for keys, value in properties.items():
         if isinstance(value, dict):
             value["path"] = ask_input(value.get("message"), value.get("func"))
-    if bool(input("\nWindows 10 (0) или Windows 11 (1) ?\n")):
-        apps += w11_apps
-    app_list = convert_applist_to_string()
-    with open(ps1_script_path, mode="w") as f:
-        f.write(ps1_script_raw.format(
-                appslist=app_list,
-                wimpath=properties.get("wim").get("path"),
-                mntpath=properties.get("mnt").get("path"),
+    additional_upd = input("\nВведите путь для второй папки с обновлениями (чтобы пропустить нажмите Enter):\n")
+    is_w11 = bool(input("\nWindows 10 (0) или Windows 11 (1) ?\n"))
+    system("pause")
+    # Start process
+    time_start = time()
+    appslist = convert_applist_to_string(is_w11)
+    with open(ps_script_path, mode="w") as f:  # Create powershell script file
+        wim = properties.get("wim").get("path")
+        mnt = properties.get("mnt").get("path")
+        f.write(ps_script_raw.format(
+                appslist=appslist,
+                wimpath=wim,
+                mntpath=mnt,
                 updpath=properties.get("upd").get("path")
             )
         )
-    with open(bat_script_path, mode="w") as f:
+        if additional_upd and exists(additional_upd):
+            f.write(ps_script_additional.format(
+                    wimpath=wim,
+                    mntpath=mnt,
+                    sec_updpath=additional_upd
+                )
+            )
+    with open(bat_script_path, mode="w") as f:  # Create bat script file
         f.write(bat_script_raw.format(
                 mntpath=properties.get("mnt").get("path"),
                 wimpath=properties.get("wim").get("path")
             )
         )
-    # subprocess.Popen("powershell Unblock-File -Path {}".format(ps1_script_path)).wait()
-    subprocess.Popen("powershell {}".format(ps1_script_path)).wait()
+    # subprocess.Popen("powershell Unblock-File -Path {}".format(ps_script_path)).wait()
+    subprocess.Popen("powershell {}".format(ps_script_path)).wait()
     subprocess.Popen("{}".format(bat_script_path)).wait()
     properties.get("wim")["path"] = ""
     properties.get("mnt")["path"] = ""
     properties.get("upd")["path"] = ""
     do_cleanup()
+    print("Затраченное время:", ((time()-time_start) / 60))
 
 
 if __name__ == '__main__':
