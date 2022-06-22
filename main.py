@@ -110,7 +110,7 @@ w11_apps = [
     # "Microsoft.Paint", # Paint (W11)
     "Microsoft.PowerAutomateDesktop", # (W11)
     "Microsoft.Todos", # (W11)
-    "MicrosoftTeams", # Teams (W11)
+    # "MicrosoftTeams", # Teams (W11)
     "MicrosoftWindows.Client.WebExperience", # Виджеты (W11)
 ]
 
@@ -157,29 +157,14 @@ def main():
     # Start process
     time_start = time()
     appslist = convert_applist_to_string(is_w11)
+    wim = properties.get("wim").get("path")
+    mnt = properties.get("mnt").get("path")
     with open(ps_script_path, mode="w") as f:  # Create powershell script file
-        wim = properties.get("wim").get("path")
-        mnt = properties.get("mnt").get("path")
-        f.write(ps_script_raw.format(
-                appslist=appslist,
-                wimpath=wim,
-                mntpath=mnt,
-                updpath=properties.get("upd").get("path")
-            )
-        )
+        f.write(ps_script_raw.format(appslist=appslist, wimpath=wim, mntpath=mnt, updpath=properties.get("upd").get("path")))
         if additional_upd and exists(additional_upd):
-            f.write(ps_script_additional.format(
-                    wimpath=wim,
-                    mntpath=mnt,
-                    sec_updpath=additional_upd
-                )
-            )
+            f.write(ps_script_additional.format(wimpath=wim, mntpath=mnt, sec_updpath=additional_upd))
     with open(bat_script_path, mode="w") as f:  # Create bat script file
-        f.write(bat_script_raw.format(
-                mntpath=properties.get("mnt").get("path"),
-                wimpath=properties.get("wim").get("path")
-            )
-        )
+        f.write(bat_script_raw.format(mntpath=mnt, wimpath=wim))
     # subprocess.Popen("powershell Unblock-File -Path {}".format(ps_script_path)).wait()
     subprocess.Popen("powershell {}".format(ps_script_path)).wait()
     subprocess.Popen("{}".format(bat_script_path)).wait()
@@ -187,7 +172,7 @@ def main():
     properties.get("mnt")["path"] = ""
     properties.get("upd")["path"] = ""
     do_cleanup()
-    print("Затраченное время:", ((time()-time_start) / 60))
+    print("Затраченное время:", round((time()-time_start) / 60))
 
 
 if __name__ == "__main__":
