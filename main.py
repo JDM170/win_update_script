@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 from sys import exit
 from os import getcwd, remove, system
 from os.path import isfile, exists
@@ -81,9 +84,9 @@ apps = [
     "Microsoft.MicrosoftStickyNotes",
     "Microsoft.MixedReality.Portal",
     "Microsoft.Office.OneNote",
-    "Microsoft.OneConnect",
+    "Microsoft.OneConnect", # W10?
     "Microsoft.People",
-    "Microsoft.Print3D",
+    "Microsoft.Print3D", # W10?
     "Microsoft.ScreenSketch", # Скриншоты (W10 1809+)
     "Microsoft.SkypeApp",
     "Microsoft.Xbox.TCUI", # Xbox Live (W11)
@@ -121,10 +124,9 @@ def is_admin():
 
 def ask_input(message, checking_func):
     user_input = input(message)
-    if not user_input or len(user_input) == 0 or not checking_func(user_input):
-        ask_input(message, checking_func)
-    else:
+    if user_input and checking_func(user_input):
         return user_input
+    ask_input(message, checking_func)
 
 
 def convert_applist_to_string(is_w11):
@@ -168,9 +170,8 @@ def main():
     # subprocess.Popen("powershell Unblock-File -Path {}".format(ps_script_path)).wait()
     subprocess.Popen("powershell {}".format(ps_script_path)).wait()
     subprocess.Popen("{}".format(bat_script_path)).wait()
-    properties.get("wim")["path"] = ""
-    properties.get("mnt")["path"] = ""
-    properties.get("upd")["path"] = ""
+    for key in properties.keys():
+        properties[key]["path"] = ""
     do_cleanup()
     print("Затраченное время:", round((time()-time_start) / 60))
 
