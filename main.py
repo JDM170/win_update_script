@@ -69,7 +69,8 @@ dism /unmount-wim /mountdir:"{mntpath}" /commit
 
 dism /cleanup-wim
 """
-# dism /export-image /sourceimagefile:"{wimpath}" /sourceindex:1 /destinationimagefile:"{wimpath}.esd" /Compress:recovery
+
+export_cmd = "dism /export-image /sourceimagefile:\"{wimpath}\" /sourceindex:1 /destinationimagefile:\"{wimpath}.esd\" /Compress:recovery"
 
 apps = [
     "Microsoft.549981C3F5F10", # Cortana (W11)
@@ -170,6 +171,7 @@ def main():
     # subprocess.Popen("powershell Unblock-File -Path {}".format(ps_script_path)).wait()
     subprocess.Popen("powershell {}".format(ps_script_path)).wait()
     subprocess.Popen("{}".format(bat_script_path)).wait()
+    print("Для завершения используйте следующую команду:\n{}".format(export_cmd.format(wimpath=wim)))
     for key in properties.keys():
         properties[key]["path"] = ""
     do_cleanup()
