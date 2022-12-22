@@ -94,7 +94,7 @@ apps = [
     "Microsoft.XboxApp", # Xbox (W10)
     "Microsoft.XboxGameOverlay", # (W11)
     "Microsoft.XboxGamingOverlay", # Xbox Game Bar (W11)
-    "Microsoft.XboxIdentityProvider", # (W11)
+    # "Microsoft.XboxIdentityProvider", # (W11)
     "Microsoft.XboxSpeechToTextOverlay", # (W11)
     "Microsoft.YourPhone", # Ваш телефон (W10 1809+)
     "Microsoft.ZuneMusic",
